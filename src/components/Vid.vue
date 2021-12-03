@@ -2,7 +2,7 @@
   <div class="vid_container">
     <!-- 视频 -->
     <div class="v_bd">
-      <video controls="controls" class="dy" crossorigin="anonymous" @pause="changestate(0)" @play="changestate(1)" ref='dy'>
+      <video :controls='mask == "active" ? "controls" : false' class="dy" crossorigin="anonymous" @pause="changestate(0)" @play="changestate(1)" ref='dy'>
         <source :src="item.dy_video_url" type="video/mp4">
       </video>
     </div>
@@ -120,6 +120,7 @@ export default {
       this.$refs.dy.play();
     },
     change(s){
+      this.$refs.dy.pause();
       if(s == '1'){
         this.clicked_c = !this.clicked_c
       }else{
@@ -157,6 +158,14 @@ export default {
       });
     }
   },
+  watch:{
+    //暂停拖拽过后的视频
+    mask(n,o){
+      if(n == ''){
+        this.$refs.dy.pause();
+      }
+    }
+  }
 }
 </script>
 

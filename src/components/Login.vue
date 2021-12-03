@@ -45,23 +45,28 @@ export default {
         alert('请输入正确的用户名和密码');
       }
     const cookie = document.cookie.split(';');
+
     if(cookie!=''){
         let c = '';
         cookie.some(item =>{
         c = item.trim();
         if(c.indexOf('token' == 0)){
-        c = c.substring(6);
-        c = JSON.parse(c) 
-        return true;
-      }
-    })
-    if(c!=''){
-      //需进一步验证用户名和密码....
-      this.$router.push('/data');
+          c = c.substring(6);
+          c = JSON.parse(c) 
+          return true;
+        }
+      })
+        if(c!=''){
+          //需进一步验证用户名和密码....
+          this.$router.push('/data');
+        }else{
+          alert('请输入正确的用户名和密码')
+        }
     }else{
-      alert('请输入正确的用户名和密码')
+      //本地文件形式访问不到cookie
+      this.$router.push('/data');
     }
-    }
+
     }
   }
 }

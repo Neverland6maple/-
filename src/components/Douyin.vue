@@ -72,12 +72,12 @@ export default {
       if(this.cl){
         if((this.distance-this.current*-600)%600 > 100){
         this.handle(1)
-      }else if((this.distance-this.current*-600)%600 < -100){
+        }else if((this.distance-this.current*-600)%600 < -100){
         this.handle(-1)
-      }else if((this.distance-this.current*-600)%600 != 0){
+        }else if((this.distance-this.current*-600)%600 != 0){
         this.dv.style.transition = 'all 0.3s';
         this.distance = this.current*-600
-      }
+        }
       }
     })
   },

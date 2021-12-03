@@ -116,6 +116,10 @@ export default {
   }, 
   //组件内导航 判断进入当前组件时是否有权限 不能访问this
   beforeRouteEnter (to, from, next){
+    if(from.path == "/login"){
+      next()
+      return true;
+    }
     const cookie = document.cookie.split(';');
     let c = '';
     if(cookie == '' || cookie == null){

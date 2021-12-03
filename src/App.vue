@@ -4,6 +4,11 @@
     <a-layout id="components-layout-demo-fixed-sider" style="min-height: 100vh" :class="sty">
       <!-- 侧边栏 -->
       <a-layout-sider @collapse="col" v-model="collapsed" collapsible width="300px" :style="{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0 }" :theme="theme">
+        <div class="sta_name">
+          <img src="@/assets/dy.png" alt="">
+          <p style="color:black" v-if="theme == 'light'">抖音电商</p>
+          <p style="color:white" v-else>抖音电商</p>
+        </div>
         <!-- 简单换肤 -->
         <div class="change_theme">
           <a-switch checked-children="亮" un-checked-children="暗" :default-checked="theme == 'light'" class="switch" @change="change_theme" />
@@ -247,6 +252,26 @@ export default {
 </script>
 
 <style scoped>
+.sta_name{
+  position: absolute;
+  height: 30px;
+  top: 8px;
+  left: 85px;
+  line-height: 30px;
+  overflow: hidden;
+}
+.sta_name img {
+  float: left;
+  width: 26px;
+  height: 26px;
+}
+.sta_name p {
+  float: left;
+  margin-left: 3px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 24px;
+}
 .im_buy{
   position: absolute;
   background-color: #fff;

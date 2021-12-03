@@ -2,16 +2,14 @@
   <div class="drawer_container">
     <a-drawer :title="slot" placement="right" :closable="false" :visible="visible" @close="onClose" class="drawer_bd">
       <ul>
-
+        <!-- 循环渲染 -->
         <li class="cart" v-for="item in cart" :key="item.itemid">
           <div class="prod_cart">
             <div class="prod_pic">
               <img :src="item.src" alt="">
             </div>
             <div class="prod_title">
-
               <h3 @click="send(item.all)">{{item.title}}</h3>
-
             </div>
             <div class="prod_data">
               <span class="num">
@@ -32,8 +30,8 @@
             <span class="remove" :data-pid="item.itemid" @click="remove">移除该商品</span>
           </div>
         </li>
-
       </ul>
+      <!-- 阻挡层，防止被遮挡 -->
       <div class="barrier"></div>
       <div class="im_buy">
         <a-button type="primary" size="large" class="buy_btn">
@@ -41,43 +39,54 @@
         </a-button>
         <span class="total">总计:￥<i>{{total_price.toFixed(2)}}</i></span>
       </div>
-
     </a-drawer>
   </div>
 </template>
 
 <script>
-import bus from '@/components/eventbus.js'
 export default {
   data(){
     return{
       cart:JSON.parse(localStorage.getItem('cart')) || [],
-       update:true,
+      //是否可以出现加减功能
+      update:true,
+      //VueNode
       slot:<span><a-icon type="shopping-cart" style="marginRight:8px;fontSize:18px"/>您的购物车</span>,
       visible:false
     }
   },
+  created(){
+    this.$bus.$on('addcart',()=>{
+      this.cart = JSON.parse(localStorage.getItem('cart'));
+    })
+    this.$bus.$on('showdrawer',val=>{
+      this.visible = val;
+    })
+  },  
   methods:{
     send(val){
       this.$router.push('/details');
-      bus.$emit('todetails',{
+      this.$bus.$emit('todetails',{
         prod:val
       })
     },
+    //直接更改数量
     update_dir(e){
-      this.update = !this.update 
+      this.update = false;
       this.$nextTick(()=>{
+        //用子选择器的方法才能精准找到要展示的输入框
         e.path[1].querySelector('.item_num').style.display = '';
         e.path[1].querySelector('.item_num').focus()
       })
     },
+    //加减数量
     update_num(val,e){
       const id =e.target.dataset.pid;
       this.cart.some(cur=>{
         if(cur.itemid == id){
           if(val == -1 && cur.num <= 1 ){
             return true
-          } 
+          }
           cur.num = parseInt(cur.num) + parseInt(val)
           return true;
         }
@@ -85,7 +94,7 @@ export default {
     },
     remove(e){
       const id =e.target.dataset.pid;
-      let index ;
+      let index;
       this.cart.some((cur,ind)=>{
         if(cur.itemid == id){
           index = ind;
@@ -97,27 +106,18 @@ export default {
       }
     },
     hide_inp(e){
-      this.update = !this.update
+      this.update = true
       e.target.style.display = "none";
-      },
-        num_only(e){
+    },
+    num_only(e){
       e.target.value = e.target.value.replace(/[^\d]/g,'')
       if(isNaN(parseInt(e.target.value-0)) || parseInt(e.target.value) <= 0 || e.target.value == ''){
         e.target.value = 1
-        // console.log('nan');
       }
     },
     onClose() {
       this.visible = false;
     },
-  },
-  created(){
-    bus.$on('addcart',()=>{
-      this.cart = JSON.parse(localStorage.getItem('cart'));
-    })
-    bus.$on('showdrawer',val=>{
-      this.visible = val;
-    })
   },
   computed:{
     total_price(){
@@ -128,18 +128,12 @@ export default {
       return top;
     }
   },
-  directives:{
-    focus:{
-      inserted(el){
-        el.focus();
-      }
-    }
-  },
   watch:{
     cart:{
-      handler(e){
+      handler(){
         localStorage.setItem('cart',JSON.stringify(this.cart))
       },
+      //属性改变也会监听到
       deep:true
     }
   },
@@ -234,7 +228,6 @@ li{
   left: 44px;
   height: 16px;
   outline: none;
-  /* border: none; */
 }
 .prod_data{
   font-size: 12px;
@@ -258,7 +251,6 @@ li{
   position: relative;
   height: 230px;
   width: 208px;
-  /* background-color: powderblue; */
   border-bottom: 1px dotted #999;
 }
 .remove{
@@ -267,6 +259,7 @@ li{
   top:-21px;
   color: #1890ff;
   font-size: 12px;
+  cursor: pointer;
 }
 .remove:hover{
   text-decoration: underline;

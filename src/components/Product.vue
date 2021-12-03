@@ -1,19 +1,18 @@
 <template>
   <div class="prod_container">
-
-    <a href="javascript:;" @click="send">
+    <!-- 商品宣传图 -->
+    <router-link :to="{name:'details',params:prod}">
       <div class="commodity">
-        <img :src="img" alt="">
+        <img :src="prod.itempic" alt="">
       </div>
-    </a>
+    </router-link>
+    <!-- 标题 -->
     <div class="title">
-      <h4>
-        <a href="#/details">
-          {{prod.itemshorttitle}}
-        </a>
-      </h4>
+      <router-link :to="{name:'details' ,params:prod}">
+        {{prod.itemshorttitle}}
+      </router-link>
     </div>
-
+    <!-- 价格 -->
     <div class="price">
       <i class="style_red">￥</i><span class="now_price">{{prod.itemendprice}}</span>
       <span class="orig_price">￥{{itemoriprice}}</span>
@@ -21,29 +20,22 @@
     <div class="goods">
       优惠券还剩{{prod.couponsurplus}}张
       <div class="bar">
-        <div class="in_bar" ref="in_bar" :style="{width:rate}"></div>
+        <div class="in_bar" :style="{width:rate}"></div>
       </div>
-      <!-- 剩余<i class="style_red">{{}}</i>张 -->
     </div>
-    <a href="#">
+    <router-link :to="{name:'details',params:prod}">
       <div class="buy">
         立刻抢购
       </div>
-    </a>
+    </router-link>
   </div>
 </template>
 
 <script>
-import bus from '@/components/eventbus.js'
 export default {
   props:{
     prod:{
       type:Object
-    }
-  },
-  data(){
-    return{
-      img:this.prod.itempic
     }
   },
   computed:{
@@ -51,29 +43,21 @@ export default {
     itemoriprice(){
       return (parseFloat(this.prod.itemendprice)+parseFloat(this.prod.couponmoney)).toFixed(2);
     },
+    //优惠券领取剩余百分比
     rate(){
       let rate = parseInt(this.prod.couponsurplus)/parseInt(this.prod.couponnum)*100
       rate = rate > 100 ? 100:rate;
       return rate+'%'
     }
   },
-  methods:{
-    send(){
-      // console.log('发送了数据到details');
-      this.$router.push('/details')
-      this.$nextTick(()=>{
-        bus.$emit('todetails',{
-        prod:this.prod
-      })
-      })
-    }
-  },
 }
 </script>
 
-<style lang="less" scoped>
+<style  scoped>
 .title {
+  text-align: left;
   height: 40px;
+  margin-left: 5px;
 }
 .commodity img {
     width: 270px;
@@ -99,12 +83,13 @@ export default {
     display: inline-block;
     margin: 0 10px;
     margin-bottom: -2px;
+    overflow: hidden;
 }
 .in_bar {
-    height: 11px;
-    // width: 10px;
+    float: left;
+    height: 10px;
     background-color: #e00825;
-    border-radius: 6px 6px 6px 6px;
+    border-radius: 6px;
 }
 .buy {
     margin-top: 5px;

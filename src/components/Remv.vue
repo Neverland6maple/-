@@ -1,11 +1,13 @@
 <template>
   <div class="remv_container">
+    <!-- 后退 -->
     <div class="back" @click="back">
-      <!-- <a-icon class="back_icon" type="left-circle" /> -->
       <a-icon class="back_icon" type="arrow-left" />
     </div>
+    <!-- 视频 -->
     <video controls="controls" :src="src" class="rem_video">
     </video>
+    <!-- 点赞转发 -->
     <div class="data">
       <div class="heart">
         <span v-if="clicked == false">
@@ -36,10 +38,12 @@
 export default {
   data(){
     return {
-      likes:parseInt(this.$route.params.likes),
-      src:this.$route.params.src,
-      shares:parseInt(this.$route.params.shares),
+      likes:parseInt(this.$route.params.likes)|| JSON.parse(localStorage.getItem('prod')).dy_video_like_count,
+      src:this.$route.params.src || JSON.parse(localStorage.getItem('prod')).dy_video_url,
+      shares:parseInt(this.$route.params.shares) || JSON.parse(localStorage.getItem('prod')).dy_video_share_count,
+      //点赞状态
       clicked:false,
+      //分享状态
       clicked_s:false
     }
   },
@@ -104,7 +108,7 @@ export default {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.85);
-    z-index: 2;
+    z-index: 10;
   }
   .rem_video{
     display: block;

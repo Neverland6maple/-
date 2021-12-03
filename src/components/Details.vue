@@ -1,23 +1,24 @@
 <template>
   <div class="details_container">
+    <!-- 相关视频 -->
     <router-view></router-view>
     <!-- 商品购买页主体 -->
     <div class="prod_details">
       <!-- 左视图 主要为展示区 -->
       <div class="lf_container">
         <div>
-          <h3 class="cat"> <a :href="`#/shop?id=${prod.fqcat}`">{{cat}}</a> > {{prod.itemshorttitle}}</h3>
+          <h3 class="cat"><a :href="`#/shop?id=${prod.fqcat}`">{{cat}}</a> > {{prod.itemshorttitle}}</h3>
         </div>
         <div class="exhibition">
           <div class="prod_pic" @mousemove="move" @mouseenter="enlarge_fn" @mouseleave="enlarge_fn">
             <img :src="prod.itempic" alt="" class="pro_img">
-
+            <!-- 放大镜遮罩层 -->
             <div class="mask" v-if="enlarge"></div>
-            <div class="bigger" v-if="enlarge">
-              <img :src="prod.itempic" alt="">
-            </div>
           </div>
-
+          <!-- 放大图 -->
+          <div class="bigger" v-if="enlarge">
+            <img :src="prod.itempic" alt="">
+          </div>
           <div class="ex_toggle">
             <a-button-group>
               <a-button type="primary">
@@ -28,7 +29,6 @@
               </a-button>
             </a-button-group>
           </div>
-
         </div>
         <div class="function">
           <span class="prod_id">商品编号：{{prod.itemid}}</span>
@@ -39,15 +39,16 @@
       <div class="rg_container">
         <!-- 标题 -->
         <h1 class="title">
-          <a href="#" class="tianmao_icon">
-            <img v-if="prod.shoptype=='B'" src="../../public/tianmao.png" alt="">
-            <img v-if="prod.shoptype=='C'" src="../../public/taobao.png" style="height:20px" alt="">
-          </a>
+          <span href="#" class="tianmao_icon">
+            <img v-if="prod.shoptype=='B'" src="@/assets/tianmao.png" alt="天猫商品">
+            <img v-if="prod.shoptype=='C'" src="@/assets/taobao.png" style="height:20px" alt="淘宝商品">
+          </span>
           <span>{{prod.itemtitle}}</span>
         </h1>
         <!-- 导购 -->
         <div class="shopping_guide">{{prod.itemdesc}}</div>
         <!-- 横幅 -->
+        <!-- <div class="banner">此商品正在参加{{type}}，{{countdown}},请尽快购买！</div> -->
         <div class="banner">此商品正在参加{{type}}，{{countdown}},请尽快购买！</div>
         <!-- 价格相关 -->
         <div class="discount">
@@ -80,7 +81,7 @@
             </span>
           </div>
           <!-- 优惠券详情 -->
-          <div class="coupon_more" style="display:none" ref="dropdown">
+          <div class="coupon_more" v-if="dropdown">
             优惠券
             <span class="right">
               {{prod.couponexplain}} 到{{endTime}}结束
@@ -109,11 +110,10 @@
               <span class="right">{{prod.couponreceive}}</span>
             </div>
           </div>
-
         </div>
-        <!-- 数值面板 -->
+        <!-- 销售面板 -->
         <ul class="panel">
-          <li>月销量是<span class="red">{{prod.itemsale}}</span></li>
+          <li>月销量<span class="red">{{prod.itemsale}}</span></li>
           <li>今日销量<span class="red">{{prod.todaysale}}</span></li>
           <li>折扣力度<span class="red">{{prod.discount || 0}}</span></li>
         </ul>
@@ -122,11 +122,10 @@
           <span class="fl_title">数量</span>
           <div class="buy">
             <div class="buy_num fl">
-              <input type="text" v-model="count" @keyup="num_only">
+              <input type="text" v-model="count" @input="num_only">
               <a href="javascript:;" class="num_u" @click="add">+</a>
               <a href="javascript:;" class="num_d" @click="sub">-</a>
             </div>
-
             <a href="javascript:;" class="buying fr" @click="add_cart();openNotification()">
               加入购物车
             </a>
@@ -159,29 +158,32 @@
 </template>
 
 <script>
-import bus from '@/components/eventbus.js'
 export default {
   data(){
     return {
+      //详情页数据
       prod: this.$route.params.itemid ? this.$route.params : false || JSON.parse(localStorage.getItem('prod')),
+      //为你推荐数据
       list:[],
       count:1,
-      enlarge:false
+      enlarge:false,
+      dropdown:false
     }
   },
   created(){
-    this.getRandom();
-    localStorage.setItem('prod',JSON.stringify(this.prod))
-    bus.$on('todetails',val=>{
+    this.$bus.$on('todetails',val=>{
       this.prod = val.prod;
       localStorage.setItem('prod',JSON.stringify(this.prod))
     })
-    bus.$on('toRandom',val=>{
+    this.$bus.$on('toRandom',val=>{
       this.list = val
     })
+    this.getRandom();
+    localStorage.setItem('prod',JSON.stringify(this.prod))
   },
   computed:{
     cat(){
+      //全等
       switch(this.prod.fqcat){
         case '1':
           return '女装';
@@ -229,13 +231,13 @@ export default {
       let D = time.getDate()
       let h = time.getHours()
       let m = time.getMinutes()
-      let s = time.getUTCSeconds();
+      let s = time.getSeconds();
       return ` ${Y}-${M}-${D} ${h}:${m}:${s} `
     },
     countdown(){
-      let time = this.prod.end_time
-      let D = Math.floor(time/1000/60/60/24)
-      let h = Math.ceil(time/1000/60/60%24)
+      const time = this.prod.end_time
+      const D = Math.floor(time/1000/60/60/24)
+      const h = Math.ceil(time/1000/60/60%24)
       return ` 活动${D}天${h}小时后结束 `
     },
     type(){
@@ -252,7 +254,7 @@ export default {
   },
   methods:{
     getRandom(){
-       bus.$emit('random_5',{
+      this.$bus.$emit('random_5',{
       page:Math.floor(Math.random()*19)+1,
       pageSize:5,
       type:0,
@@ -260,12 +262,9 @@ export default {
     })
     },
     show_more(){
-      if(this.$refs.dropdown.style.display === 'none'){
-        this.$refs.dropdown.style.display = ''
-      }else{
-        this.$refs.dropdown.style.display = 'none'
-      }
+      this.dropdown = !this.dropdown;
     },
+    //跳转到子组件，显示视频
     tovideo(){
       this.$router.push({
         name:'remv',
@@ -276,12 +275,11 @@ export default {
         }
       })
     },
+    //更新数据
     send(item){
       this.count = 1
-      // this.$router.push('/details')
-      // this.$nextTick(()=>{
-        bus.$emit('todetails',{prod:item})  
-      // })
+      this.prod = item;
+      localStorage.setItem('prod',JSON.stringify(item));
     },
     //购买相关功能
     add_cart(){
@@ -293,8 +291,7 @@ export default {
           return true;
         }
       })
-      console.log(flag);
-
+      // 判断是否已经添加至购物车
       if(!flag){
         cart.push({
         itemid:this.prod.itemid,
@@ -307,24 +304,25 @@ export default {
       });
       }
       localStorage.setItem('cart',JSON.stringify(cart));
-      bus.$emit('addcart');
+      this.$bus.$emit('addcart');
     },
     add(){
-      this.count = this.count -0 + 1
+      this.count = this.count - 0 + 1
     },
     sub(){
       if(this.count <= 1){
-        return 
+        return false
       }
       this.count -=1
     },
+    //只允许输入数字
     num_only(e){
-      e.target.value = e.target.value.replace(/[^\d]/g,'')
-      if(isNaN(parseInt(e.target.value-0)) || parseInt(e.target.value) <= 0 || e.target.value == ''){
-        e.target.value = 1
-        // console.log('nan');
+      this.count = parseInt(e.target.value.replace(/[^\d]/g,''))
+      if(isNaN(this.count) || parseInt(e.target.value) <= 0 || e.target.value == ''){
+        this.count = 1;
       }
     },
+    //添加购物城成功反馈
     openNotification(){
       this.$notification.open({
         message: '通知',
@@ -337,28 +335,29 @@ export default {
     enlarge_fn(){
       this.enlarge = !this.enlarge;
     },
+    //放大镜功能
     move(e){
+      //最外层组件
+      const out = document.getElementById('main')
+      //当前组件
       const box = document.querySelector('.details_container')
+      //商品原图
       const img = document.querySelector('.prod_pic')
+      //放大镜遮罩层
       const mask = document.querySelector('.mask');
+      //放大图
       const big = document.querySelector('.bigger img');
-
-      let l = box.offsetLeft;
-
-      //如果侧边栏收缩了 则需要调整box据页面左侧的距离
-      if(l == 40){
-      l = 240;
-      }
-
-      let x = e.pageX - l - img.offsetLeft - mask.offsetWidth /2 ;
+      
+      // 遮罩层距离原图的位移
+      let x = e.pageX - out.offsetLeft - box.offsetLeft - img.offsetLeft - mask.offsetWidth /2 ;
       let  y = e.pageY-box.offsetTop-img.offsetTop - mask.offsetHeight/2 ;
 
+      //避免遮罩层超出原图
       if(x <= 0 ){
         x = 0
       }else if(x >= img.offsetWidth - mask.offsetWidth){
         x = img.offsetWidth - mask.offsetWidth
       }
-
       if(y <= 0){
         y = 0
       }else if(y >= img.offsetHeight -mask.offsetHeight){
@@ -367,7 +366,7 @@ export default {
 
       mask.style.left = x + 'px';
       mask.style.top = y +'px';
-
+      //2.5为计算好的放大比例
       big.style.left = -x * 2.5 + 'px';
       big.style.top = -y * 2.5 + 'px';
     }
@@ -393,11 +392,11 @@ export default {
 }
 .bigger{
   position: absolute;
-  left: 380px;
-  top: 0px;
+  left: 390px;
+  top: 42px;
   width: 375px;
   height: 465px;
-  z-index: 1;
+  z-index: 2;
   overflow: hidden;
   border: 1px solid #f1f1f1;
 
@@ -515,6 +514,7 @@ li {
 }
 .details_container{
   width: 1150px;
+  overflow: hidden;
 }
 .lf_container{
   float:left;
@@ -548,6 +548,7 @@ li {
   padding: 0 0 0 10px;
   font-weight: 700;
   font-size: 20px;
+  text-align: left;
 }
 .shopping_guide{
   padding: 0 12px;
@@ -558,7 +559,7 @@ li {
 .discount{
   position: relative;
   padding: 3px 0;
-  background-image: url('../../public/bg.png');
+  background-image: url('../assets/bg.png');
 }
 .banner{
   margin-top: 20px;

@@ -1,28 +1,29 @@
 <template>
   <div class="vid_container">
+    <!-- 视频 -->
     <div class="v_bd">
-      <video controls="controls" class="dy" crossorigin="anonymous" @pause="test" @play="play" ref='dy'>
+      <video controls="controls" class="dy" crossorigin="anonymous" @pause="changestate(0)" @play="changestate(1)" ref='dy'>
         <source :src="item.dy_video_url" type="video/mp4">
       </video>
     </div>
+    <!-- 隐藏区域加保护罩 -->
     <div :class="`mask ${mask}`"></div>
+    <!-- 暂停图标 -->
     <div class="pause_icon aside" v-if="state == 0 && mask == 'active'" @click="start">
       <a-icon type="play-circle" />
     </div>
-
+    <!-- 点击控制上下切换 -->
     <div class="control aside" v-if="mask == 'active'">
-
       <div class="arrow" @click="handle(1)">
         <a-icon type="up-circle" />
       </div>
-
       <div class="arrow" @click="handle(-1)">
         <a-icon type="down-circle" />
       </div>
     </div>
-
+    <!-- 点赞评论转发 -->
     <div class="interaction aside" v-if="mask == 'active'">
-
+      <!-- 点赞 -->
       <div class="item" v-if="!clicked" @click="change">
         <a-icon type="heart" />
         <div class="item_num">{{item.dy_video_like_count}}</div>
@@ -31,8 +32,8 @@
         <a-icon type="heart" />
         <div class="item_num">{{item.dy_video_like_count -0 + 1}}</div>
       </div>
-
-      <div class="item" v-if="!clicked_s" @click="change(1)">
+      <!-- 评论 -->
+      <div class="item" v-if="!clicked_c" @click="change(1)">
         <a-icon type="message" />
         <div class="item_num">{{item.dy_video_share_count}}</div>
       </div>
@@ -40,12 +41,22 @@
         <a-icon type="message" />
         <div class="item_num">{{item.dy_video_share_count-0+1}}</div>
       </div>
-
+      <!-- 转发 -->
       <div class="item" @mouseenter="showlink(true)" @mouseleave="showlink(false)">
         <a-icon type="share-alt" />
       </div>
     </div>
-
+    <!-- 视频链接 -->
+    <div id="copy_container" class="copy_container" v-if="onicon" @mouseenter="showlink(true)" @mouseleave="showlink(false)">
+      <div class="sub_title">点击复制视频链接</div>
+      <div class="copy_cont">
+        <input type="text" :value="item.dy_video_url" ref="ipt">
+        <button @click="copy()">
+          复制
+        </button>
+      </div>
+    </div>
+    <!-- 截图、跳转详情页 -->
     <div class="function" ref="drawer" @mouseleave="pull">
       <div class="item_l" @click="cut">
         <a-icon type="camera" />
@@ -63,24 +74,15 @@
         <a-icon type="left" />
       </div>
     </div>
-
-    <div id="copy_container" class="copy_container" v-if="onicon" @mouseenter="showlink(true)" @mouseleave="showlink(false)">
-      <div class="sub_title">点击复制视频链接</div>
-      <div class="copy_cont">
-        <input type="text" :value="item.dy_video_url" ref="ipt">
-        <button @click="copy()">
-          按钮
-        </button>
-      </div>
-    </div>
-
   </div>
 </template>
 
 <script>
 export default {
   props:{
+    //父组件传来的上下切换动画
     handle:{},
+    //通过父组件来判断哪个组件处于显示区
     mask:{
       type:String
     },
@@ -88,20 +90,23 @@ export default {
   },
   data(){
     return {
+      //视频播放状态
       state:0,
+      //链接框是否显示
       onicon:false,
+      //点赞
       clicked:false,
-      clicked_s:false,
+      //评论
+      clicked_c:false,
+      //功能栏状态
       shrink:true
     }
   },
   methods: {
-    test(){
-      this.state = 0;
+    changestate(s){
+      this.state = s;
     },
-    play(){
-      this.state = 1;
-    },
+    //复制功能
     copy(){
       this.$refs.ipt.select();
       document.execCommand("Copy");
@@ -116,7 +121,7 @@ export default {
     },
     change(s){
       if(s == '1'){
-        this.clicked_s = !this.clicked_s
+        this.clicked_c = !this.clicked_c
       }else{
         this.clicked = !this.clicked 
       }
@@ -131,14 +136,15 @@ export default {
     },
     cut(){
       const scale = 0.6;
-      const video = document.querySelector('.dy');
+      const video = this.$refs.dy;
       let canvas = document.createElement('canvas');
       canvas.width = video.videoWidth * scale;
       canvas.height = video.videoHeight *scale;
       canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+      //VueNode
       const img = <img src=""/>
       img.data.attrs.src = canvas.toDataURL("image/png",2.0);
-       this.$notification.open({
+      this.$notification.open({
         message: '右键保存图片',
         description: img,
         class:'innerbox',
@@ -173,7 +179,7 @@ export default {
   position: absolute;
   display: flex;
   left: -200px;
-  top: 30px;
+  top: 40px;
   background-color: rgba(255,255,255,0.2);
   width: 225px;
   height: 62px;
@@ -193,11 +199,9 @@ export default {
 }
 .item_l a{
   color: rgba(255, 255, 255, 0.6);
-
 }
 .item_l:hover{
   background-color: rgba(255, 255, 255, 0.2);
-
 }
 .aside{
   z-index: 4;
@@ -223,7 +227,6 @@ export default {
   line-height: 38px;
 }
 .sub_title{
-  /* position: relative; */
   text-align: left;
   width: 265px;
   height: 18px;
@@ -241,7 +244,7 @@ export default {
     padding: 20px 0;
     position: absolute;
     width: 340px;
-    right: 72px;
+    right: 94px;
     bottom: 95px;  
   vertical-align: baseline; 
   z-index: 100;
@@ -270,7 +273,6 @@ export default {
   line-height: 35px;
   width: 70px;
   color: #fff;
-
 }
 #copy_container button:hover{
   background-color: #40a9ff;
@@ -283,9 +285,8 @@ export default {
   position:absolute;
   display: flex;
   flex-direction: column;
-  right: 0px;
   top: 80px;
-  right: 25px;
+  right: 48px;
   width: 44px;
   text-align: center;
   align-items: center;
@@ -324,7 +325,6 @@ export default {
 }
 .item:hover{
   color: rgba(255, 255, 255, 0.9);
-  /* color: #1890ff; */
   transform: scale(1.05);
 }
 .interaction{
@@ -332,7 +332,7 @@ export default {
   align-items: center;
   display: flex;
   flex-direction: column;
-  right: 22px;
+  right: 44px;
   top: 180px;
 }
 .dy{

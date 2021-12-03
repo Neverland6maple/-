@@ -1,8 +1,10 @@
 <template>
   <div class="chart_container" ref="container">
+    <!-- 饼图 -->
     <div class="chart_pie">
       <a-skeleton active />
     </div>
+    <!-- 选择数据的时段 -->
     <div class="feat">
       <a-button type="primary" class="btn" @click="active('itemsale',$event)">
         本月
@@ -14,6 +16,7 @@
         近2小时
       </a-button>
     </div>
+    <!-- 换场 -->
     <div class="transition" @click="move">
       <a-icon type="double-right" />
     </div>
@@ -21,7 +24,7 @@
 </template>
 
 <script>
-
+//引入echarts图表库
 import * as echarts from 'echarts';
 import request from '@/utils/request.js'
 export default {
@@ -29,38 +32,42 @@ export default {
     return{
       type:['女装','男装','内衣','美妆','配饰','鞋品','箱包','儿童','母婴','居家','美食','数码','家电','其他','车品','文体','宠物'],
       num:[],
-      inter:'todaysale' ,
-     
+      inter:'todaysale'
     }
   },
   created(){
     this.loopitem(this.inter);
   },
-  mounted(){
-  //  this.creat_chart();
-  },
   methods:{
+    //请求接口所有数据
     async loopitem(interval){
       let a_num= new Array(17).fill(0);
-      const { data:{data:res} } = await request.get('/',{
+      //设定请求次数 总请求数为 n * 100 
+      let n = 5;
+      do{
+        const { data:{data:res} } = await request.get('/',{
         params:{
-          apikey:'JBu2ajrAhjPbGOd42FgiCpUxT25o75ZK',
+          min_id:1,
           back:100
         }});
-      res.forEach(item=>{ 
+        res.forEach(item=>{ 
         a_num[item.fqcat-1] += item[interval]-0;
       });
+      }while( --n >0)
       this.num = a_num
       this.creat_chart();
     },
+    //动态饼图
     creat_chart(){
-        var chartdom = document.querySelector('.chart_pie');
-  var mychart = echarts.init(chartdom);
-  var option;
-  option =  {
+    const chartdom = document.querySelector('.chart_pie');
+    const mychart = echarts.init(chartdom);
+    let option;
+    option =  {
+    //显示选择的数据
     tooltip: {
       trigger: 'item'
     },
+    //类型一栏
     legend: {
       top: '0%',
       left: '2%',
@@ -72,13 +79,13 @@ export default {
       },
       itemGap:19
     },
+    //图数据
     series: [
       {
         name: '商品销售类型分布图',
         type: 'pie',
         radius: ['40%', '70%'],
-        // avoidLabelOverlap: false,
-        center:["50%","50%"],
+        center:["50%","55%"],
         itemStyle: {
           borderRadius: 2,
           borderColor: '#fff',
@@ -86,13 +93,11 @@ export default {
         },
         label: {
           show: true,
-          fontSize:'20px'
-          // position: 'center'
+          fontSize:20
         },
         emphasis: {
           label: {
             show: true,
-            // fontSize: '40',
             fontWeight: 'bold'
           }
         },
@@ -112,11 +117,14 @@ export default {
     },
     color:['#E5FFF6','#E6F7FF','#E5E6FF','#FFEEE5','#FFE5E6','#FFF6E5','#F2F2F2','#FFFFE5','#FF7E38','#38B9FF','#3877FF','#38FF7E','#E7A840','#F85659','#9C9C9C','#C98E6E','#7E38FF']
     };
+    //挂载
     option && mychart.setOption(option);
+
     window.addEventListener('resize',function(){
       mychart.resize();
     })
     },
+    //选择要显示的数据
     active(inte,e){
       let btnlist = document.querySelector('.feat').children;
       for(const item of btnlist){
@@ -126,8 +134,9 @@ export default {
       this.inter = inte;
       this.loopitem(this.inter);
     },
+    //添加切换动画
     move(){
-      this.$refs.container.classList.add('styl');
+      this.$refs.container.classList.add('anim');
       setTimeout(()=>{
         this.$router.push('/data');
       },800);
@@ -146,7 +155,7 @@ export default {
   </script>
 
 <style scoped>
-.styl{
+.anim{
   transform:translateX(1300px);
 }
 .transition{

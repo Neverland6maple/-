@@ -16,7 +16,10 @@ import Data from '@/components//Data.vue'
 import Douyin from '@/components/Douyin.vue'
 //登录页面
 import Login from '@/components/Login.vue'
+import bus from '@/components/eventbus.js'
 Vue.use(VueRouter)
+//挂载bus
+Vue.prototype.$bus = bus;
 
 const routes = [
   {path:'/shop',component:Shop},
@@ -38,9 +41,9 @@ const router = new VueRouter({
 })
 
 
-const VueRouterPush =  VueRouter.prototype.push
-VueRouter.prototype.push = function push (to) {
-  return VueRouterPush.call(this, to).catch(err => err)
-}
+// const VueRouterPush =  VueRouter.prototype.push
+// VueRouter.prototype.push = function push (to) {
+//   return VueRouterPush.call(this, to).catch(err => err)
+// }
 
 export default router
